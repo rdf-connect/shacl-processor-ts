@@ -15,12 +15,13 @@
         "allowSyntheticDefaultImports": true,
         "incremental": true,
         "esModuleInterop": true,
-        "removeComments": true
+        "removeComments": true,
+        "types": ["bun"]
     },
     "ts-node": {
         "esm": true,
         "experimentalSpecifierResolution": "node"
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "types/**/*"],
     "exclude": ["node_modules/**/*"]
 }

@@ -1,46 +1,51 @@
-import { log } from "../src";
+import { validate } from "../src";
 import { SimpleStream } from "@ajuvercr/js-runner";
-import { expect } from "@jest/globals";
+import { describe, test, expect } from "@jest/globals";
 
-describe("log", () => {
+describe("shacl", () => {
     test("successful", async () => {
-        const consoleLog = jest.spyOn(console, "log").mockImplementation();
-        expect.assertions(7);
+        expect.assertions(2);
 
+        // Function parameters.
+        const path =
+            "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/shacl/point.ttl";
         const incoming = new SimpleStream<string>();
         const outgoing = new SimpleStream<string>();
+        const error = new SimpleStream<string>();
 
-        // We expect each one of the messages to have been logged.
-        outgoing.on("end", () => {
-            const calls = consoleLog.mock.calls;
-            expect(calls).toHaveLength(3);
-            expect(calls[0][0]).toBe("Hello, World!");
-            expect(calls[1][0]).toBe("This is a second message");
-            expect(calls[2][0]).toBe("Goodbye.");
-        });
+        // A valid point shape.
+        const point = `
+        @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-        let index = 0;
-        outgoing.on("data", (data) => {
-            if (index == 0) {
-                expect(data).toBe("Hello, World!");
-            } else if (index == 1) {
-                expect(data).toBe("This is a second message");
-            } else {
-                expect(data).toBe("Goodbye.");
-            }
-            index += 1;
-        });
+        [ ] a <point>;
+          <x> "1"^^xsd:integer;
+          <y> "2"^^xsd:integer.
+        `;
 
-        // Initialize the processor.
-        const startLogging = log(incoming, outgoing);
-        await startLogging();
+        // An invalid point shape.
+        const invalid = `
+        @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-        // Push all messages into the pipeline.
-        await incoming.push("Hello, World!");
-        await incoming.push("This is a second message");
-        await incoming.push("Goodbye.");
+        [ ] a <point>;
+          <a> "3"^^xsd:integer;
+          <b> "4"^^xsd:integer.
+        `;
 
+        // Set expected data.
+        outgoing.on("data", (data) => expect(data).toEqual(point));
+        error.on("data", (data) => expect(data).toEqual(invalid));
+
+        // Initialize and execute the function.
+        const func = await validate(path, incoming, outgoing, error);
+        await func();
+
+        // Send point into the pipeline.
+        await incoming.push(point);
+        await incoming.push(invalid);
+
+        // Finish testing.
         await incoming.end();
-        consoleLog.mockRestore();
+        await outgoing.end();
+        await error.end();
     });
 });
