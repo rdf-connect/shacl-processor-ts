@@ -19,3 +19,11 @@ Validate an incoming data stream using SHACL. If the incoming data is valid, it 
 ## Limitations
 
 At the time of writing, all files are read and serialized in the Turtle format. Additional options may be available in the future.
+
+Turtle prefixes are hard coded for the time being. Ideally, these should be based on the prefixes used in the input data, or omitted at the user's request.
+
+```ts
+const prefixes = new PrefixMapFactory().prefixMap();
+prefixes.set("ex", rdf.namedNode("http://example.org#"));
+prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
+```
