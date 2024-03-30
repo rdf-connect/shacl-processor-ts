@@ -1,0 +1,6 @@
+@prefix ex: <http://example.org#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:ValidPoint a ex:Point;
+  ex:x "1"^^xsd:integer;
+  ex:y "2"^^xsd:integer.

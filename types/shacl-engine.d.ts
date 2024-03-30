@@ -12,7 +12,12 @@ declare module "shacl-engine" {
         );
     }
 
+    type Result = {
+        args: never;
+    };
+
     type Report = {
+        results: Array<Result>;
         conforms: boolean;
         dataset: DatasetCore; // TODO: check
         ptr: never; // TODO: check

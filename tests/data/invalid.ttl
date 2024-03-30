@@ -1,0 +1,9 @@
+@prefix ex: <http://example.org#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:ValidPoint
+  a ex:Point;
+  ex:x "1";
+  ex:y "2";
+  ex:z "3".

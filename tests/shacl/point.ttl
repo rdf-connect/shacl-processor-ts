@@ -1,11 +1,24 @@
+@prefix ex: <http://example.org#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-[] a sh:NodeShape;
-    sh:targetClass <point>;
+ex:PointShape
+    a sh:NodeShape;
+    sh:targetClass ex:Point;
+    sh:closed true;
+    sh:ignoredProperties (rdf:type);
     sh:property [
-        sh:path <x>;
+        sh:path ex:x;
+        sh:message "Requires an integer X coordinate";
         sh:name "X-coordinate";
+        sh:datatype xsd:integer;
+        sh:minCount 1;
+        sh:maxCount 1;
+    ], [
+        sh:path ex:y;
+        sh:message "Requires an integer Y coordinate";
+        sh:name "Y-coordinate";
         sh:datatype xsd:integer;
         sh:minCount 1;
         sh:maxCount 1;
