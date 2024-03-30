@@ -4,12 +4,14 @@ import { Readable } from "stream";
 import formatsPretty from "@rdfjs/formats/pretty.js";
 import Serializer from "@rdfjs/serializer-turtle";
 import { Validator } from "shacl-engine";
+import { ShaclError } from "./error";
 
 type ValidateArguments = {
     path: string;
     incoming: Stream<string>;
     outgoing: Writer<string>;
     report?: Writer<string>;
+    verbose?: boolean;
 };
 
 export async function validate(
@@ -29,7 +31,13 @@ export async function validate(
 
     // Create shape stream.
     const res = await rdf.fetch(path);
-    const shapes = await res.dataset();
+    if (!res.ok) {
+        throw ShaclError.fileSystemError();
+    }
+
+    const shapes = await res.dataset().catch(() => {
+        throw ShaclError.invalidRdfFormat();
+    });
 
     // Parse input stream using shape stream.
     // @ts-expect-error Factory is valid.
@@ -42,16 +50,21 @@ export async function validate(
             // Parse data into a dataset.
             const rawStream = Readable.from(data);
             const quadStream = parser.import(rawStream);
-            const dataset = await rdf.dataset().import(quadStream);
+            const dataset = await rdf
+                .dataset()
+                .import(quadStream)
+                .catch(() => {
+                    throw ShaclError.invalidRdfFormat();
+                });
 
             // Run through validator.
             const result = await validator.validate({ dataset });
-            const resultRaw = serializer.transform(result.dataset);
 
             // Pass through data if valid.
             if (result.conforms) {
                 await outgoing.push(data);
             } else if (report) {
+                const resultRaw = serializer.transform(result.dataset);
                 await report.push(resultRaw);
             }
         });
