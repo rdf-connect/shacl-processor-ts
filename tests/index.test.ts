@@ -4,13 +4,6 @@ import { describe, test, expect } from "vitest";
 import { Validator } from "shacl-engine";
 import rdf from "rdf-ext";
 import formatsPretty from "@rdfjs/formats/pretty.js";
-import { Stream } from "@rdfjs/types";
-
-async function fetchRdf(url: string): Promise<Stream> {
-    const res = await rdf.fetch(url);
-    res.headers.set("content-type", "text/turtle");
-    return res.quadStream();
-}
 
 describe("shacl", () => {
     test("library", async () => {
@@ -18,14 +11,18 @@ describe("shacl", () => {
         rdf.formats.import(formatsPretty);
 
         // Create input stream.
-        const stream = await fetchRdf(
+        let res = await rdf.fetch(
             "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/data/invalid.ttl",
         );
+        res.headers.set("content-type", "text/turtle");
+        const stream = await res.quadStream();
 
         // Create shape stream.
-        const shapeStream = await fetchRdf(
+        res = await rdf.fetch(
             "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/shacl/point.ttl",
         );
+        res.headers.set("content-type", "text/turtle");
+        const shapeStream = await res.quadStream();
 
         // Parse input stream using shape stream.
         const shapes = await rdf.dataset().import(shapeStream);
