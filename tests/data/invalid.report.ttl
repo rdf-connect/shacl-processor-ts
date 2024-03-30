@@ -1,0 +1,31 @@
+@prefix ex: <http://example.org#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+
+[ a sh:ValidationReport;
+  sh:conforms false;
+  sh:result [ a sh:ValidationResult;
+      sh:focusNode ex:ValidPoint;
+      sh:resultMessage "Requires an integer X coordinate";
+      sh:resultPath ex:x;
+      sh:resultSeverity sh:Violation;
+      sh:sourceConstraintComponent sh:DatatypeConstraintComponent;
+      sh:sourceShape [];
+      sh:value "1"
+    ], [ a sh:ValidationResult;
+      sh:focusNode ex:ValidPoint;
+      sh:resultMessage "Requires an integer Y coordinate";
+      sh:resultPath ex:y;
+      sh:resultSeverity sh:Violation;
+      sh:sourceConstraintComponent sh:DatatypeConstraintComponent;
+      sh:sourceShape [];
+      sh:value "2"
+    ], [ a sh:ValidationResult;
+      sh:focusNode ex:ValidPoint;
+      sh:resultMessage "Predicate is not allowed (closed shape)";
+      sh:resultPath ex:z;
+      sh:resultSeverity sh:Violation;
+      sh:sourceConstraintComponent sh:ClosedConstraintComponent;
+      sh:sourceShape ex:PointShape;
+      sh:value "3"
+    ]
+].
