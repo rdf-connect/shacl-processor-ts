@@ -1,6 +1,7 @@
 enum ShaclErrorType {
     FileSystemError,
     InvalidRdfFormat,
+    ValidationFailed,
 }
 
 export class ShaclError extends Error {
@@ -23,6 +24,13 @@ export class ShaclError extends Error {
         return new ShaclError(
             "Invalid RDF format",
             ShaclErrorType.InvalidRdfFormat,
+        );
+    }
+
+    static validationFailed() {
+        return new ShaclError(
+            "Validation failed and is fatal.",
+            ShaclErrorType.ValidationFailed,
         );
     }
 }

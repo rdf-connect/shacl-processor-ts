@@ -11,13 +11,13 @@ type ValidateArguments = {
     incoming: Stream<string>;
     outgoing: Writer<string>;
     report?: Writer<string>;
-    verbose?: boolean;
+    validationIsFatal?: boolean;
 };
 
 export async function validate(
     args: ValidateArguments,
 ): Promise<() => Promise<void>> {
-    const { path, incoming, outgoing, report } = args;
+    const { path, incoming, outgoing, report, validationIsFatal } = args;
 
     // Initialize the shared serializer.
     const prefixes = new PrefixMapFactory().prefixMap();
@@ -63,6 +63,8 @@ export async function validate(
             // Pass through data if valid.
             if (result.conforms) {
                 await outgoing.push(data);
+            } else if (validationIsFatal) {
+                throw ShaclError.validationFailed();
             } else if (report) {
                 const resultRaw = serializer.transform(result.dataset);
                 await report.push(resultRaw);

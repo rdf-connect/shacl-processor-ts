@@ -14,6 +14,7 @@ Validate an incoming data stream using SHACL. If the incoming data is valid, it 
 - `incoming`: channel which is used as the data source.
 - `outgoing`: channel into which valid data is written.
 - `report`: an optional channel into which the SHACL reports of invalid input data is written. (default: `null`)
+- `validationIsFatal`: throw a fatal error if validation fails. (default: `false`)
 
 ## Limitations
 
