@@ -12,17 +12,25 @@ const pipeline = `
 
         <> owl:imports <./node_modules/@ajuvercr/js-runner/ontology.ttl>, <./processors.ttl>.
 
-        <incoming> a js:JsReaderChannel.
-        <outgoing> a js:JsWriterChannel.
-
-        [ ] a js:Log;
-            js:incoming <incoming>;
-            js:outgoing <outgoing>.
+        [ ] a js:Validate;
+            js:args [
+                js:shaclPath "/tmp/path.ttl";
+                js:incoming [
+                  a js:JsReaderChannel;
+                ];
+                js:outgoing [
+                  a js:JsWriterChannel;
+                ];
+                js:report [
+                  a js:JsWriterChannel;
+                ];
+                js:validationIsFatal "true"^^xsd:boolean;
+            ].
     `;
 
 describe("processor", () => {
     test("definition", async () => {
-        expect.assertions(5);
+        expect.assertions(8);
 
         const source: Source = {
             value: pipeline,
@@ -38,15 +46,19 @@ describe("processor", () => {
         } = await extractProcessors(source);
 
         // Extract the Log processor.
-        const env = processors.find((x) => x.ty.value.endsWith("Log"))!;
+        const env = processors.find((x) => x.ty.value.endsWith("Validate"))!;
         expect(env).toBeDefined();
 
         const args = extractSteps(env, quads, config);
         expect(args.length).toBe(1);
-        expect(args[0].length).toBe(2);
+        expect(args[0].length).toBe(1);
 
-        const [[incoming, outgoing]] = args;
+        const [{ path, incoming, outgoing, report, validationIsFatal }] =
+            args[0];
+        expect(path).toBe("/tmp/path.ttl");
         expect(incoming.ty.id).toBe("https://w3id.org/conn/js#JsReaderChannel");
         expect(outgoing.ty.id).toBe("https://w3id.org/conn/js#JsWriterChannel");
+        expect(report.ty.id).toBe("https://w3id.org/conn/js#JsWriterChannel");
+        expect(validationIsFatal).toBeTruthy();
     });
 });

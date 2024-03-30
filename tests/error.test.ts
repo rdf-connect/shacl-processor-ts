@@ -13,7 +13,7 @@ describe("errors", () => {
         expect.assertions(1);
 
         const func = validate({
-            path: "/tmp/shacl-doesnt-exist.ttl",
+            shaclPath: "/tmp/shacl-doesnt-exist.ttl",
             incoming: new SimpleStream<string>(),
             outgoing: new SimpleStream<string>(),
         });
@@ -25,7 +25,7 @@ describe("errors", () => {
         expect.assertions(1);
 
         const func = validate({
-            path: "./tests/shacl/invalid.ttl",
+            shaclPath: "./tests/shacl/invalid.ttl",
             incoming: new SimpleStream<string>(),
             outgoing: new SimpleStream<string>(),
         });
@@ -40,7 +40,7 @@ describe("errors", () => {
         const outgoing = new SimpleStream<string>();
 
         const func = await validate({
-            path: shaclPath,
+            shaclPath,
             incoming,
             outgoing,
         });
@@ -60,7 +60,7 @@ describe("errors", () => {
         const incoming = new SimpleStream<string>();
 
         const func = await validate({
-            path: shaclPath,
+            shaclPath,
             incoming,
             outgoing: new SimpleStream<string>(),
             validationIsFatal: true,

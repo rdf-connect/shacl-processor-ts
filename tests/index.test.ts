@@ -56,7 +56,7 @@ beforeEach(async () => {
 
     // Restart the processor, which is the same for each test.
     const func = await validate({
-        path: shaclPath,
+        shaclPath,
         incoming,
         outgoing,
         report,

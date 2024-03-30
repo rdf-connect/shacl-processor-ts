@@ -5,26 +5,28 @@
 @prefix : <https://w3id.org/conn#>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
 
-js:Log a js:JsProcess;
+js:Validate a js:JsProcess;
     js:file <./lib/index.js>;
-    js:function "log";
+    js:function "validate";
     js:location <./>;
     js:mapping [
         a fno:Mapping;
         fno:parameterMapping [
             a fnom:PositionParameterMapping;
-            fnom:functionParameter "incoming";
+            fnom:functionParameter "args";
             fnom:implementationParameterPosition "0"^^xsd:int;
-        ], [
-            a fnom:PositionParameterMapping;
-            fnom:functionParameter "outgoing";
-            fnom:implementationParameterPosition "1"^^xsd:int;
         ];
     ].
 
 [ ] a sh:NodeShape;
-    sh:targetClass js:Log;
+    sh:targetClass js:ValidateOptions;
     sh:property [
+        sh:datatype xsd:string;
+        sh:path js:shaclPath;
+        sh:name "path";
+        sh:maxCount 1;
+        sh:minCount 1;
+    ], [
         sh:class :ReaderChannel;
         sh:path js:incoming;
         sh:name "incoming";
@@ -34,6 +36,26 @@ js:Log a js:JsProcess;
         sh:class :WriterChannel;
         sh:path js:outgoing;
         sh:name "outgoing";
+        sh:maxCount 1;
+        sh:minCount 1;
+    ], [
+        sh:class :WriterChannel;
+        sh:path js:report;
+        sh:name "report";
+        sh:maxCount 1;
+    ], [
+        sh:datatype xsd:boolean;
+        sh:path js:validationIsFatal;
+        sh:name "validationIsFatal";
+        sh:maxCount 1;
+    ].
+
+[ ] a sh:NodeShape;
+    sh:targetClass js:Validate;
+    sh:property [
+        sh:class js:ValidateOptions;
+        sh:path js:args;
+        sh:name "args";
         sh:maxCount 1;
         sh:minCount 1;
     ].
