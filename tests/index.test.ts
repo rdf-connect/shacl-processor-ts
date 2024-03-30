@@ -1,79 +1,97 @@
 import { validate } from "../src";
 import { SimpleStream } from "@ajuvercr/js-runner";
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, beforeEach } from "vitest";
 import * as fs from "fs";
 
+// Channel which streams incoming RDF.
+let incoming: SimpleStream<string>;
+
+// Output channel, if successful.
+let outgoing: SimpleStream<string>;
+let outgoingData: string;
+
+// Reporting channel, if invalid shape is found.
+let report: SimpleStream<string>;
+let reportData: string;
+
+// Valid point.
+const validRdfData = fs.readFileSync("./tests/data/valid.ttl").toString();
+
+// Invalid point.
+const invalidRdfData = fs.readFileSync("./tests/data/invalid.ttl").toString();
+const invalidRdfReport = fs
+    .readFileSync("./tests/data/invalid.report.ttl")
+    .toString();
+
+const unknownRdfData = fs.readFileSync("./tests/data/square.ttl").toString();
+
+// SHACL data.
+const shaclPath = "./tests/shacl/point.ttl";
+
+// Utility function which waits for all streams to settle.
+async function endAll(): Promise<void> {
+    await incoming.end();
+    await outgoing.end();
+    await report.end();
+}
+
+beforeEach(async () => {
+    // Reset and start the streams.
+    incoming = new SimpleStream<string>();
+    outgoing = new SimpleStream<string>();
+    report = new SimpleStream<string>();
+
+    // Reset the data itself.
+    outgoingData = "";
+    reportData = "";
+
+    // Reinitialize the data handlers.
+    outgoing.on("data", (data) => {
+        outgoingData += data;
+    });
+
+    report.on("data", (data) => {
+        reportData += data;
+    });
+
+    // Restart the processor, which is the same for each test.
+    const func = await validate({
+        path: shaclPath,
+        incoming,
+        outgoing,
+        report,
+    });
+    await func();
+});
+
 describe("shacl", () => {
-    // Valid point.
-    const valid = fs.readFileSync("./tests/data/valid.ttl").toString();
-    const validReport = fs
-        .readFileSync("./tests/data/valid.report.ttl")
-        .toString();
-
-    // Invalid point.
-    const invalid = fs.readFileSync("./tests/data/invalid.ttl").toString();
-    const invalidReport = fs
-        .readFileSync("./tests/data/invalid.report.ttl")
-        .toString();
-
-    // SHACL data.
-    const shapePath = "./tests/shacl/point.ttl";
-
     test("successful", async () => {
         expect.assertions(2);
 
-        // Function parameters.
-        const incoming = new SimpleStream<string>();
-        const outgoing = new SimpleStream<string>();
-        const report = new SimpleStream<string>();
+        await incoming.push(validRdfData);
+        await endAll();
 
-        outgoing.on("data", (data) => {
-            expect(data).toEqual(valid);
-        });
-
-        report.on("data", (data) => {
-            expect(data).toEqual(validReport);
-        });
-
-        // Initialize and execute the function.
-        const func = await validate(shapePath, incoming, outgoing, report);
-        await func();
-
-        // Send point into the pipeline.
-        await incoming.push(valid);
-
-        // Finish testing.
-        await incoming.end();
-        await outgoing.end();
-        await report.end();
+        expect(outgoingData).toEqual(validRdfData);
+        expect(reportData).toEqual("");
     });
 
     test("invalid", async () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
-        // Function parameters.
-        const incoming = new SimpleStream<string>();
-        const outgoing = new SimpleStream<string>();
-        const error = new SimpleStream<string>();
+        await incoming.push(invalidRdfData);
+        await endAll();
 
-        outgoing.on("data", () => {
-            expect(true).toBeFalsy();
-        });
+        expect(outgoingData).toEqual("");
+        expect(reportData).toEqual(invalidRdfReport);
+    });
 
-        error.on("data", (data) => {
-            expect(data).toEqual(invalidReport);
-        });
+    test("unknown", async () => {
+        expect.assertions(2);
 
-        // Initialize and execute the function.
-        const func = await validate(shapePath, incoming, outgoing, error);
-        await func();
+        await incoming.push(unknownRdfData);
+        await endAll();
 
-        // Send point into the pipeline.
-        await incoming.push(invalid);
-
-        // Finish testing.
-        await incoming.end();
-        await outgoing.end();
-        await error.end();
+        expect(outgoingData).toEqual(unknownRdfData);
+        expect(reportData).toEqual("");
     });
 });

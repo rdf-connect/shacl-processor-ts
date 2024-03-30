@@ -5,12 +5,18 @@ import formatsPretty from "@rdfjs/formats/pretty.js";
 import Serializer from "@rdfjs/serializer-turtle";
 import { Validator } from "shacl-engine";
 
+class ValidateArguments {
+    path: string;
+    incoming: Stream<string>;
+    outgoing: Writer<string>;
+    report?: Writer<string>;
+}
+
 export async function validate(
-    path: string,
-    reader: Stream<string>,
-    writer: Writer<string>,
-    error?: Writer<string>,
+    args: ValidateArguments,
 ): Promise<() => Promise<void>> {
+    const { path, incoming, outgoing, report } = args;
+
     // Initialize the shared serializer.
     const prefixes = new PrefixMapFactory().prefixMap();
     prefixes.set("ex", rdf.namedNode("http://example.org#"));
@@ -22,7 +28,7 @@ export async function validate(
     rdf.formats.import(formatsPretty);
 
     // Create shape stream.
-    const res = await rdf.fetch("./tests/shacl/point.ttl");
+    const res = await rdf.fetch(path);
     const shapes = await res.dataset();
 
     // Parse input stream using shape stream.
@@ -32,31 +38,28 @@ export async function validate(
     return async () => {
         // Anything that passes through this processor and identifies with a
         // specific shape should match the SHACL definition.
-        reader.on("data", async (data) => {
+        incoming.on("data", async (data) => {
             // Parse data into a dataset.
             const rawStream = Readable.from(data);
             const quadStream = parser.import(rawStream);
             const dataset = await rdf.dataset().import(quadStream);
 
             // Run through validator.
-            const report = await validator.validate({ dataset });
-            const reportRaw = serializer.transform(report.dataset);
+            const result = await validator.validate({ dataset });
+            const resultRaw = serializer.transform(result.dataset);
 
             // Pass through data if valid.
-            if (report.conforms) {
-                await writer.push(data);
-            }
-
-            // Send report if error channel is given.
-            if (error) {
-                await error.push(reportRaw);
+            if (result.conforms) {
+                await outgoing.push(data);
+            } else if (report) {
+                await report.push(resultRaw);
             }
         });
 
         // If the input stream closes itself, so should the output streams.
-        reader.on("end", () => {
-            writer.end();
-            error?.end();
+        incoming.on("end", () => {
+            outgoing.end();
+            report?.end();
         });
     };
 }
