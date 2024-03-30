@@ -2,54 +2,42 @@ import { validate } from "../src";
 import { SimpleStream } from "@ajuvercr/js-runner";
 import { describe, test, expect } from "vitest";
 import { Validator } from "shacl-engine";
-import rdf from "rdf-ext";
+import rdf, { PrefixMapFactory } from "rdf-ext";
 import formatsPretty from "@rdfjs/formats/pretty.js";
+import Serializer from "@rdfjs/serializer-turtle";
 
 describe("shacl", () => {
     test("library", async () => {
+        // Initialize the shared serializer.
+        const prefixes = new PrefixMapFactory().prefixMap();
+        prefixes.set("ex", rdf.namedNode("http://example.org#"));
+        prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
+        const serializer = new Serializer({ prefixes });
+
         // Extend formatting with pretty formats.
         rdf.formats.import(formatsPretty);
 
         // Create input stream.
-        let res = await rdf.fetch(
-            "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/data/invalid.ttl",
-        );
-        res.headers.set("content-type", "text/turtle");
-        const stream = await res.quadStream();
+        let res = await rdf.fetch("./tests/data/invalid.ttl");
+        const dataset = await res.dataset();
 
         // Create shape stream.
-        res = await rdf.fetch(
-            "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/shacl/point.ttl",
-        );
-        res.headers.set("content-type", "text/turtle");
-        const shapeStream = await res.quadStream();
+        res = await rdf.fetch("./tests/shacl/point.ttl");
+        const shapes = await res.dataset();
 
         // Parse input stream using shape stream.
-        const shapes = await rdf.dataset().import(shapeStream);
         const validator = new Validator(shapes, { factory: rdf });
-        const dataset = await rdf.dataset().import(stream);
+
+        // Export the report.
         const report = await validator.validate({ dataset });
-        const reportStream = report.dataset.toStream();
-
-        // Construct prefixes.
-        const prefixes = new Map();
-        prefixes.set("ex", rdf.namedNode("http://example.org#"));
-        prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
-
-        // Output stream.
-        const serializer = rdf.formats.serializers.get("text/turtle")!;
-        // @ts-expect-error Incorrect arguments, does accept prefixes.
-        const resultStream = serializer.import(reportStream, { prefixes });
-        // @ts-expect-error Pipe does work.
-        resultStream.pipe(process.stdout);
+        console.log(serializer.transform(report.dataset));
     });
 
     test("successful", async () => {
         expect.assertions(2);
 
         // Function parameters.
-        const path =
-            "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/shacl/point.ttl";
+        const path = "./tests/shacl/point.ttl";
         const incoming = new SimpleStream<string>();
         const outgoing = new SimpleStream<string>();
         const error = new SimpleStream<string>();
