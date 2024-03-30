@@ -1,8 +1,83 @@
 import { validate } from "../src";
 import { SimpleStream } from "@ajuvercr/js-runner";
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "vitest";
+import { Validator } from "shacl-engine";
+import rdf from "rdf-ext";
+import formatsPretty from "@rdfjs/formats/pretty.js";
+import { finished } from "readable-stream";
+import { promisify } from "node:util";
+import { PassThrough } from "readable-stream";
+import duplexify from "duplexify";
+
+async function createInputStream({ url }) {
+    const res = await rdf.fetch(url);
+    res.headers.set("content-type", "text/turtle");
+    return res.quadStream();
+}
+
+function createShaclStream(shapeStream) {
+    const input = new PassThrough({ objectMode: true });
+    const output = new PassThrough({ objectMode: true });
+
+    queueMicrotask(async () => {
+        const shape = await rdf.dataset().import(shapeStream);
+        const engine = new Validator(shape, { factory: rdf });
+        const dataset = await rdf.dataset().import(input);
+        const report = await engine.validate({ dataset });
+        report.dataset.toStream().pipe(output);
+    });
+
+    return duplexify.obj(input, output);
+}
+
+async function createOutputStream({ prefixes }) {
+    const output = new PassThrough({ objectMode: true });
+    const serializer = rdf.formats.serializers.get("text/turtle");
+
+    const stream = serializer.import(output, { prefixes });
+    stream.pipe(process.stdout);
+
+    return output;
+}
 
 describe("shacl", () => {
+    test("library", async () => {
+        // Extend formatting with pretty formats.
+        rdf.formats.import(formatsPretty);
+
+        // Create input stream.
+        let stream = await createInputStream({
+            url: "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/data/invalid.ttl",
+        });
+
+        // Create shape stream.
+        const shapeStream = await createInputStream({
+            url: "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/shacl/point.ttl",
+        });
+
+        // Parse input stream using shape stream.
+        const shaclStream = createShaclStream(shapeStream);
+
+        // Pipe.
+        stream.pipe(shaclStream);
+        stream = shaclStream;
+
+        // Construct prefixes.
+        const prefixes = new Map();
+        prefixes.set("ex", rdf.namedNode("http://example.org#"));
+        prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
+
+        // Output stream.
+        const outputStream = await createOutputStream({
+            prefixes,
+        });
+
+        // Pipe.
+        stream.pipe(outputStream);
+
+        await promisify(finished)(outputStream);
+    });
+
     test("successful", async () => {
         expect.assertions(2);
 
