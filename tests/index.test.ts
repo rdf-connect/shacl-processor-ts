@@ -8,14 +8,16 @@ import { finished } from "readable-stream";
 import { promisify } from "node:util";
 import { PassThrough } from "readable-stream";
 import duplexify from "duplexify";
+import { Stream } from "@rdfjs/types";
+import NamedNodeExt from "rdf-ext/lib/NamedNode";
 
-async function createInputStream({ url }) {
+async function createInputStream(url: string): Promise<Stream> {
     const res = await rdf.fetch(url);
     res.headers.set("content-type", "text/turtle");
     return res.quadStream();
 }
 
-function createShaclStream(shapeStream) {
+function createShaclStream(shapeStream: Stream): duplexify.Duplexify {
     const input = new PassThrough({ objectMode: true });
     const output = new PassThrough({ objectMode: true });
 
@@ -27,14 +29,20 @@ function createShaclStream(shapeStream) {
         report.dataset.toStream().pipe(output);
     });
 
+    // @ts-expect-error Does accept input as Passthrough.
     return duplexify.obj(input, output);
 }
 
-async function createOutputStream({ prefixes }) {
+async function createOutputStream(
+    prefixes: Map<string, NamedNodeExt>,
+): Promise<PassThrough> {
     const output = new PassThrough({ objectMode: true });
-    const serializer = rdf.formats.serializers.get("text/turtle");
+    const serializer = rdf.formats.serializers.get("text/turtle")!;
 
+    // @ts-expect-error Incorrect arguments, does accept prefixes.
     const stream = serializer.import(output, { prefixes });
+
+    // @ts-expect-error Pipe does work.
     stream.pipe(process.stdout);
 
     return output;
@@ -46,19 +54,19 @@ describe("shacl", () => {
         rdf.formats.import(formatsPretty);
 
         // Create input stream.
-        let stream = await createInputStream({
-            url: "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/data/invalid.ttl",
-        });
+        let stream = await createInputStream(
+            "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/data/invalid.ttl",
+        );
 
         // Create shape stream.
-        const shapeStream = await createInputStream({
-            url: "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/shacl/point.ttl",
-        });
+        const shapeStream = await createInputStream(
+            "/Users/jens/Developer/com.imec.shacl-validate-processor.ts/tests/shacl/point.ttl",
+        );
 
         // Parse input stream using shape stream.
         const shaclStream = createShaclStream(shapeStream);
 
-        // Pipe.
+        // @ts-expect-error Pipe does work.
         stream.pipe(shaclStream);
         stream = shaclStream;
 
@@ -68,11 +76,9 @@ describe("shacl", () => {
         prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
 
         // Output stream.
-        const outputStream = await createOutputStream({
-            prefixes,
-        });
+        const outputStream = await createOutputStream(prefixes);
 
-        // Pipe.
+        // @ts-expect-error Pipe does work.
         stream.pipe(outputStream);
 
         await promisify(finished)(outputStream);
