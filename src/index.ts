@@ -5,12 +5,12 @@ import formatsPretty from "@rdfjs/formats/pretty.js";
 import Serializer from "@rdfjs/serializer-turtle";
 import { Validator } from "shacl-engine";
 
-class ValidateArguments {
+type ValidateArguments = {
     path: string;
     incoming: Stream<string>;
     outgoing: Writer<string>;
     report?: Writer<string>;
-}
+};
 
 export async function validate(
     args: ValidateArguments,
