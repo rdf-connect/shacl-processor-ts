@@ -1,6 +1,6 @@
 # shacl-processor-ts
 
-[![Build and tests with Node.js](https://github.com/rdf-connect/shacl-processor-ts/actions/workflows/build-test.yml/badge.svg)](https://github.com/rdf-connect/shacl-processor-ts/actions/workflows/build-test.yml)
+[![Build and tests with Node.js](https://github.com/rdf-connect/shacl-processor-ts/actions/workflows/build-test.yml/badge.svg)](https://github.com/rdf-connect/shacl-processor-ts/actions/workflows/build-test.yml) [![npm](https://img.shields.io/npm/v/@rdf-connect/shacl-processor-ts.svg?style=popout)](https://npmjs.com/package/@rdf-connect/shacl-processor-ts)
 
 Validate data streams using SHACL.
 
