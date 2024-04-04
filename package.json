@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run --coverage --coverage.include src",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
