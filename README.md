@@ -10,7 +10,7 @@ Validate data streams using SHACL.
 
 Validate an incoming data stream using SHACL. If the incoming data is valid, it is sent unchanged into the outgoing stream. Otherwise, the SHACL validation report is sent into an optional `report` channel for further investigation.
 
-- `path`: a local file path which points to a SHACL definition.
+- `shaclPath`: a local file path which points to a SHACL definition.
 - `incoming`: channel which is used as the data source.
 - `outgoing`: channel into which valid data is written.
 - `report`: an optional channel into which the SHACL reports of invalid input data is written. (default: `null`)
