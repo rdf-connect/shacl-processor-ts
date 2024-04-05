@@ -2,13 +2,14 @@
   "name": "@rdfc/shacl-processor-ts",
   "version": "0.1.0",
   "description": "Validate data using SHACL.",
+  "type": "module",
   "main": "lib/index.js",
   "files": [
     "lib/**/*",
     "./processors.ttl"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "test": "vitest run --coverage --coverage.include src",
     "prepare": "husky",
     "prepublishOnly": "npm run build"
@@ -32,6 +33,7 @@
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.8",
     "typescript": "^5.4.3",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^1.4.0"
