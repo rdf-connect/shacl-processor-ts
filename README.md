@@ -24,6 +24,5 @@ Turtle prefixes are hard coded for the time being. Ideally, these should be base
 
 ```ts
 const prefixes = new PrefixMapFactory().prefixMap();
-prefixes.set("ex", rdf.namedNode("http://example.org#"));
 prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
 ```

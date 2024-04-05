@@ -21,7 +21,6 @@ export async function validate(
 
     // Initialize the shared serializer.
     const prefixes = new PrefixMapFactory().prefixMap();
-    prefixes.set("ex", rdf.namedNode("http://example.org#"));
     prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
     const serializer = new Serializer({ prefixes });
     const parser = rdf.formats.parsers.get("text/turtle")!;
