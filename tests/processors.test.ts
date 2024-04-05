@@ -53,9 +53,9 @@ describe("processor", () => {
         expect(args.length).toBe(1);
         expect(args[0].length).toBe(1);
 
-        const [{ path, incoming, outgoing, report, validationIsFatal }] =
+        const [{ shaclPath, incoming, outgoing, report, validationIsFatal }] =
             args[0];
-        expect(path).toBe("/tmp/path.ttl");
+        expect(shaclPath).toBe("/tmp/path.ttl");
         expect(incoming.ty.id).toBe("https://w3id.org/conn/js#JsReaderChannel");
         expect(outgoing.ty.id).toBe("https://w3id.org/conn/js#JsWriterChannel");
         expect(report.ty.id).toBe("https://w3id.org/conn/js#JsWriterChannel");
