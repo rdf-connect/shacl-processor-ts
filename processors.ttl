@@ -23,7 +23,7 @@ js:Validate a js:JsProcess;
     sh:property [
         sh:datatype xsd:string;
         sh:path js:shaclPath;
-        sh:name "path";
+        sh:name "shaclPath";
         sh:maxCount 1;
         sh:minCount 1;
     ], [
