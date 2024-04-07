@@ -2,5 +2,9 @@ version: 2
 updates:
     - package-ecosystem: "npm"
       directory: "/"
+      groups:
+          shared:
+              patterns:
+                  - "*"
       schedule:
           interval: "daily"
