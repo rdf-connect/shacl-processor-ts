@@ -48,6 +48,11 @@ js:Validate a js:JsProcess;
         sh:path js:validationIsFatal;
         sh:name "validationIsFatal";
         sh:maxCount 1;
+    ], [
+        sh:datatype xsd:string;
+        sh:path js:mime;
+        sh:name "MIME type";
+        sh:maxCount 1;
     ].
 
 [ ] a sh:NodeShape;

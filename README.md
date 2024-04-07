@@ -15,12 +15,13 @@ Validate an incoming data stream using SHACL. If the incoming data is valid, it 
 - `outgoing`: channel into which valid data is written.
 - `report`: an optional channel into which the SHACL reports of invalid input data is written. (default: `null`)
 - `validationIsFatal`: throw a fatal error if validation fails. (default: `false`)
+- `mime`: the internet media type of the incoming data used to initialize the parser. (default: `text/turtle`)
 
 ## Limitations
 
-At the time of writing, all files are read and serialized in the Turtle format. Additional options may be available in the future.
+The file type of the incoming data must be known beforehand and be set using the `mime` parameter in order to initialize the parser. Type agnostic parsers may be available in the feature, making this setting redundant.
 
-Turtle prefixes are hard coded for the time being. Ideally, these should be based on the prefixes used in the input data, or omitted at the user's request.
+SHACL reports are outputted in Turtle using humanized formatting. Prefixes are hard coded for the time being. Ideally, these should be based on the prefixes used in the input data, or omitted at the user's request. Other file types should be made available as well.
 
 ```ts
 const prefixes = new PrefixMapFactory().prefixMap();

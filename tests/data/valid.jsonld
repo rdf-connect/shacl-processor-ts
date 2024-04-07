@@ -1,0 +1,1 @@
+[{"@id":"http://example.org#Point"},{"@id":"http://example.org#ValidPoint","@type":["http://example.org#Point"],"http://example.org#x":[{"@value":1}],"http://example.org#y":[{"@value":2}]}]

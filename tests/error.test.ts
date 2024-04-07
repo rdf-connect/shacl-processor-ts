@@ -22,6 +22,19 @@ describe("errors", () => {
         expect(func()).rejects.toThrow(ShaclError.fileSystemError());
     });
 
+    test("invalid data rdf format", async () => {
+        expect.assertions(1);
+
+        const func = validate({
+            shaclPath,
+            incoming: new SimpleStream<string>(),
+            outgoing: new SimpleStream<string>(),
+            mime: "text/invalid",
+        });
+
+        expect(func).rejects.toThrowError(ShaclError.invalidRdfFormat());
+    });
+
     test("invalid shacl rdf format", async () => {
         expect.assertions(1);
 
@@ -73,5 +86,26 @@ describe("errors", () => {
         );
 
         await incoming.end();
+    });
+
+    test("incorrect mime", async () => {
+        expect.assertions(1);
+
+        const validJsonLd = fs
+            .readFileSync("./tests/data/valid.jsonld")
+            .toString();
+        const incoming = new SimpleStream<string>();
+
+        const func = await validate({
+            shaclPath,
+            incoming,
+            outgoing: new SimpleStream<string>(),
+            mime: "text/turtle",
+        });
+        func();
+
+        expect(async () => {
+            await incoming.push(validJsonLd);
+        }).rejects.toThrow(ShaclError.invalidRdfFormat());
     });
 });

@@ -11,17 +11,27 @@ type ValidateArguments = {
     incoming: Stream<string>;
     outgoing: Writer<string>;
     report?: Writer<string>;
+    mime?: string;
     validationIsFatal?: boolean;
 };
 
 export async function validate(args: ValidateArguments): Promise<() => void> {
-    const { shaclPath, incoming, outgoing, report, validationIsFatal } = args;
+    const { shaclPath, incoming, outgoing, report } = args;
+
+    // Default arguments.
+    const mime = args.mime ?? "text/turtle";
+    const validationIsFatal = args.validationIsFatal ?? false;
 
     // Initialize the shared serializer.
     const prefixes = new PrefixMapFactory().prefixMap();
     prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
     const serializer = new Serializer({ prefixes });
-    const parser = rdf.formats.parsers.get("text/turtle")!;
+
+    // Initialize the data parser.
+    const parser = rdf.formats.parsers.get(mime);
+    if (!parser) {
+        throw ShaclError.invalidRdfFormat();
+    }
 
     // Extend formatting with pretty formats.
     rdf.formats.import(formatsPretty);
