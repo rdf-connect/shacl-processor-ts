@@ -61,7 +61,7 @@ beforeEach(async () => {
         outgoing,
         report,
     });
-    await func();
+    func();
 });
 
 describe("shacl", () => {

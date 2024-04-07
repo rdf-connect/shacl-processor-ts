@@ -12,13 +12,14 @@ describe("errors", () => {
     test("invalid shacl file path", async () => {
         expect.assertions(1);
 
-        const func = validate({
-            shaclPath: "/tmp/shacl-doesnt-exist.ttl",
-            incoming: new SimpleStream<string>(),
-            outgoing: new SimpleStream<string>(),
-        });
+        const func = () =>
+            validate({
+                shaclPath: "/tmp/shacl-doesnt-exist.ttl",
+                incoming: new SimpleStream<string>(),
+                outgoing: new SimpleStream<string>(),
+            });
 
-        expect(func).rejects.toThrow(ShaclError.fileSystemError());
+        expect(func()).rejects.toThrow(ShaclError.fileSystemError());
     });
 
     test("invalid shacl rdf format", async () => {
@@ -30,7 +31,7 @@ describe("errors", () => {
             outgoing: new SimpleStream<string>(),
         });
 
-        expect(func).rejects.toThrow(ShaclError.invalidRdfFormat());
+        expect(func).rejects.toThrowError(ShaclError.invalidRdfFormat());
     });
 
     test("invalid input data", async () => {
@@ -44,7 +45,7 @@ describe("errors", () => {
             incoming,
             outgoing,
         });
-        await func();
+        func();
 
         expect(
             incoming.push("This is not a valid Turtle file!"),
@@ -65,7 +66,7 @@ describe("errors", () => {
             outgoing: new SimpleStream<string>(),
             validationIsFatal: true,
         });
-        await func();
+        func();
 
         expect(incoming.push(invalidRdfData)).rejects.toThrow(
             ShaclError.validationFailed(),

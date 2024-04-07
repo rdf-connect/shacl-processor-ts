@@ -14,9 +14,7 @@ type ValidateArguments = {
     validationIsFatal?: boolean;
 };
 
-export async function validate(
-    args: ValidateArguments,
-): Promise<() => Promise<void>> {
+export async function validate(args: ValidateArguments): Promise<() => void> {
     const { shaclPath, incoming, outgoing, report, validationIsFatal } = args;
 
     // Initialize the shared serializer.
@@ -42,7 +40,7 @@ export async function validate(
     // @ts-expect-error Factory is valid.
     const validator = new Validator(shapes, { factory: rdf });
 
-    return async () => {
+    return () => {
         // Anything that passes through this processor and identifies with a
         // specific shape should match the SHACL definition.
         incoming.on("data", async (data) => {
