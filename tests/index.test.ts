@@ -2,7 +2,6 @@ import { validate } from "../src";
 import { SimpleStream } from "@ajuvercr/js-runner";
 import { describe, test, expect, beforeEach } from "vitest";
 import * as fs from "fs";
-import { ShaclError } from "../src/error";
 
 // Channel which streams incoming RDF.
 let incoming: SimpleStream<string>;
@@ -59,14 +58,13 @@ beforeEach(async () => {
 
 describe("shacl", () => {
     beforeEach(async () => {
-        // Restart the processor, which is the same for each test.
-        const func = await validate({
+        // Reset the validation function.
+        await validate({
             shaclPath,
             incoming,
             outgoing,
             report,
         });
-        func();
     });
 
     test("successful", async () => {
@@ -104,14 +102,14 @@ describe("shacl - config", () => {
     test("mime", async () => {
         expect.assertions(2);
 
-        const func = await validate({
+        const func = validate({
             shaclPath,
             incoming,
             outgoing,
             report,
             mime: "application/n-triples",
         });
-        func();
+        await func;
 
         await incoming.push(validNTriples);
         await endAll();

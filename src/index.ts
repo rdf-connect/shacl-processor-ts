@@ -15,7 +15,7 @@ type ValidateArguments = {
     validationIsFatal?: boolean;
 };
 
-export async function validate(args: ValidateArguments): Promise<() => void> {
+export async function validate(args: ValidateArguments): Promise<void> {
     const { shaclPath, incoming, outgoing, report } = args;
 
     // Default arguments.
@@ -50,38 +50,36 @@ export async function validate(args: ValidateArguments): Promise<() => void> {
     // @ts-expect-error Factory is valid.
     const validator = new Validator(shapes, { factory: rdf });
 
-    return () => {
-        // Anything that passes through this processor and identifies with a
-        // specific shape should match the SHACL definition.
-        incoming.on("data", async (data) => {
-            // Parse data into a dataset.
-            const rawStream = Readable.from(data);
-            const quadStream = parser.import(rawStream);
-            const dataset = await rdf
-                .dataset()
-                .import(quadStream)
-                .catch(() => {
-                    throw ShaclError.invalidRdfFormat();
-                });
+    // Anything that passes through this processor and identifies with a
+    // specific shape should match the SHACL definition.
+    incoming.on("data", async (data) => {
+        // Parse data into a dataset.
+        const rawStream = Readable.from(data);
+        const quadStream = parser.import(rawStream);
+        const dataset = await rdf
+            .dataset()
+            .import(quadStream)
+            .catch(() => {
+                throw ShaclError.invalidRdfFormat();
+            });
 
-            // Run through validator.
-            const result = await validator.validate({ dataset });
+        // Run through validator.
+        const result = await validator.validate({ dataset });
 
-            // Pass through data if valid.
-            if (result.conforms) {
-                await outgoing.push(data);
-            } else if (validationIsFatal) {
-                throw ShaclError.validationFailed();
-            } else if (report) {
-                const resultRaw = serializer.transform(result.dataset);
-                await report.push(resultRaw);
-            }
-        });
+        // Pass through data if valid.
+        if (result.conforms) {
+            await outgoing.push(data);
+        } else if (validationIsFatal) {
+            throw ShaclError.validationFailed();
+        } else if (report) {
+            const resultRaw = serializer.transform(result.dataset);
+            await report.push(resultRaw);
+        }
+    });
 
-        // If the input stream closes itself, so should the output streams.
-        incoming.on("end", () => {
-            outgoing.end();
-            report?.end();
-        });
-    };
+    // If the input stream closes itself, so should the output streams.
+    incoming.on("end", () => {
+        outgoing.end();
+        report?.end();
+    });
 }
