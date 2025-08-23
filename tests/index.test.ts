@@ -1,18 +1,8 @@
-import { validate } from "../src";
-import { SimpleStream } from "@ajuvercr/js-runner";
 import { describe, test, expect, beforeEach } from "vitest";
 import * as fs from "fs";
-
-// Channel which streams incoming RDF.
-let incoming: SimpleStream<string>;
-
-// Output channel, if successful.
-let outgoing: SimpleStream<string>;
-let outgoingData: string;
-
-// Reporting channel, if invalid shape is found.
-let report: SimpleStream<string>;
-let reportData: string;
+import { createWriter, logger } from "@rdfc/js-runner/lib/testUtils";
+import { FullProc } from "@rdfc/js-runner";
+import { Validate } from "../src";
 
 // Valid point.
 const validRdfData = fs.readFileSync("./tests/data/valid.ttl").toString();
@@ -29,72 +19,91 @@ const unknownRdfData = fs.readFileSync("./tests/data/square.ttl").toString();
 // SHACL data.
 const shaclPath = "./tests/shacl/point.ttl";
 
-// Utility function which waits for all streams to settle.
-async function endAll(): Promise<void> {
-    await incoming.end();
-    await outgoing.end();
-    await report.end();
+let inputWriter: ReturnType<typeof createWriter>[0];
+let inputReader: ReturnType<typeof createWriter>[1];
+let outputWriter: ReturnType<typeof createWriter>[0];
+let outputReader: ReturnType<typeof createWriter>[1];
+let reportWriter: ReturnType<typeof createWriter>[0];
+let reportReader: ReturnType<typeof createWriter>[1];
+
+let proc: FullProc<Validate>;
+let transformPromise: Promise<void>;
+
+// Utility: collect all messages from a reader
+async function collect(reader: typeof outputReader): Promise<string[]> {
+    const collected: string[] = [];
+    for await (const msg of reader.strings()) {
+        collected.push(msg);
+    }
+    return collected;
 }
 
 beforeEach(async () => {
-    // Reset and start the streams.
-    incoming = new SimpleStream<string>();
-    outgoing = new SimpleStream<string>();
-    report = new SimpleStream<string>();
+    [inputWriter, inputReader] = createWriter();
+    [outputWriter, outputReader] = createWriter();
+    [reportWriter, reportReader] = createWriter();
 
-    // Reset the data itself.
-    outgoingData = "";
-    reportData = "";
+    proc = <FullProc<Validate>>new Validate(
+        {
+            shaclPath,
+            incoming: inputReader,
+            outgoing: outputWriter,
+            report: reportWriter,
+        },
+        logger,
+    );
 
-    // Reinitialize the data handlers.
-    outgoing.on("data", (data) => {
-        outgoingData += data;
-    });
-
-    report.on("data", (data) => {
-        reportData += data;
-    });
+    await proc.init();
+    transformPromise = proc.transform();
 });
 
 describe("shacl", () => {
-    beforeEach(async () => {
-        // Reset the validation function.
-        await validate({
-            shaclPath,
-            incoming,
-            outgoing,
-            report,
-        });
-    });
-
     test("successful", async () => {
         expect.assertions(2);
 
-        await incoming.push(validRdfData);
-        await endAll();
+        await inputWriter.string(validRdfData);
+        await inputWriter.close();
 
-        expect(outgoingData).toEqual(validRdfData);
-        expect(reportData).toEqual("");
+        const [outCollected, repCollected] = await Promise.all([
+            collect(outputReader),
+            collect(reportReader),
+        ]);
+        await transformPromise;
+
+        expect(outCollected.join("")).toEqual(validRdfData);
+        expect(repCollected.join("")).toEqual("");
     });
 
     test("invalid", async () => {
         expect.assertions(2);
 
-        await incoming.push(invalidRdfData);
-        await endAll();
+        await inputWriter.string(invalidRdfData);
+        await inputWriter.close();
 
-        expect(outgoingData).toEqual("");
-        expect(reportData).toEqual(invalidRdfReport);
+        const [outCollected, repCollected] = await Promise.all([
+            collect(outputReader),
+            collect(reportReader),
+        ]);
+        await transformPromise;
+
+        expect(outCollected.join("")).toEqual("");
+        expect(repCollected.join("")).toEqual(invalidRdfReport);
     });
 
     test("unknown", async () => {
         expect.assertions(2);
 
-        await incoming.push(unknownRdfData);
-        await endAll();
+        await inputWriter.string(unknownRdfData);
+        await inputWriter.close();
 
-        expect(outgoingData).toEqual(unknownRdfData);
-        expect(reportData).toEqual("");
+        const [outCollected, repCollected] = await Promise.all([
+            collect(outputReader),
+            collect(reportReader),
+        ]);
+        await transformPromise;
+
+        expect(outCollected.join("")).toEqual(unknownRdfData);
+        expect(repCollected.join("")).toEqual("");
     });
 });
 
@@ -102,19 +111,34 @@ describe("shacl - config", () => {
     test("mime", async () => {
         expect.assertions(2);
 
-        const func = validate({
-            shaclPath,
-            incoming,
-            outgoing,
-            report,
-            mime: "application/n-triples",
-        });
-        await func;
+        [inputWriter, inputReader] = createWriter();
+        [outputWriter, outputReader] = createWriter();
+        [reportWriter, reportReader] = createWriter();
 
-        await incoming.push(validNTriples);
-        await endAll();
+        proc = <FullProc<Validate>>new Validate(
+            {
+                shaclPath,
+                incoming: inputReader,
+                outgoing: outputWriter,
+                report: reportWriter,
+                mime: "application/n-triples",
+            },
+            logger,
+        );
 
-        expect(outgoingData).toEqual(validNTriples);
-        expect(reportData).toEqual("");
+        await proc.init();
+        transformPromise = proc.transform();
+
+        await inputWriter.string(validNTriples);
+        await inputWriter.close();
+
+        const [outCollected, repCollected] = await Promise.all([
+            collect(outputReader),
+            collect(reportReader),
+        ]);
+        await transformPromise;
+
+        expect(outCollected.join("")).toEqual(validNTriples);
+        expect(repCollected.join("")).toEqual("");
     });
 });

@@ -1,98 +1,152 @@
 import { describe, test, expect } from "vitest";
-import { validate } from "../src";
-import { SimpleStream } from "@ajuvercr/js-runner";
 import { ShaclError } from "../src/error";
+import { Validate } from "../src";
+import { createWriter, logger } from "@rdfc/js-runner/lib/testUtils";
+import { FullProc } from "@rdfc/js-runner";
 import fs from "fs";
 
-// Parse input files beforehand and share among tests.
 const shaclPath = "./tests/shacl/point.ttl";
 const validJsonLd = fs.readFileSync("./tests/data/valid.jsonld").toString();
 const invalidRdfData = fs.readFileSync("./tests/data/invalid.ttl").toString();
 
-// These streams can be used as a fallback, and shouldn't contain any tested
-// data.
-const incoming = new SimpleStream<string>();
-const outgoing = new SimpleStream<string>();
-
-describe("errors", () => {
+describe("Validate processor error handling", () => {
     test("invalid shacl file path", async () => {
         expect.assertions(1);
 
-        const func = validate({
-            shaclPath: "/tmp/shacl-doesnt-exist.ttl",
-            incoming,
-            outgoing,
-        });
+        const [inputWriter, inputReader] = createWriter();
+        const [outputWriter] = createWriter();
 
-        expect(func).rejects.toThrow(ShaclError.fileSystemError());
+        const proc = <FullProc<Validate>>new Validate(
+            {
+                shaclPath: "/tmp/shacl-doesnt-exist.ttl",
+                incoming: inputReader,
+                outgoing: outputWriter,
+            },
+            logger,
+        );
+
+        await expect(proc.init()).rejects.toThrow(ShaclError.fileSystemError());
     });
 
     test("invalid data rdf format", async () => {
         expect.assertions(1);
 
-        const func = validate({
-            shaclPath,
-            incoming,
-            outgoing,
-            mime: "text/invalid",
-        });
+        const [inputWriter, inputReader] = createWriter();
+        const [outputWriter] = createWriter();
 
-        expect(func).rejects.toThrowError(ShaclError.invalidRdfFormat());
+        const proc = <FullProc<Validate>>new Validate(
+            {
+                shaclPath,
+                incoming: inputReader,
+                outgoing: outputWriter,
+                mime: "text/invalid",
+            },
+            logger,
+        );
+
+        await expect(proc.init()).rejects.toThrow(
+            ShaclError.invalidRdfFormat(),
+        );
     });
 
     test("invalid shacl rdf format", async () => {
         expect.assertions(1);
 
-        const func = validate({
-            shaclPath: "./tests/shacl/invalid.ttl",
-            incoming,
-            outgoing,
-        });
+        const [inputWriter, inputReader] = createWriter();
+        const [outputWriter] = createWriter();
 
-        expect(func).rejects.toThrowError(ShaclError.invalidRdfFormat());
+        const proc = <FullProc<Validate>>new Validate(
+            {
+                shaclPath: "./tests/shacl/invalid.ttl",
+                incoming: inputReader,
+                outgoing: outputWriter,
+            },
+            logger,
+        );
+
+        await expect(proc.init()).rejects.toThrow(
+            ShaclError.invalidRdfFormat(),
+        );
     });
 
     test("invalid input data", async () => {
         expect.assertions(1);
 
-        await validate({
-            shaclPath,
-            incoming,
-            outgoing,
-        });
+        const [inputWriter, inputReader] = createWriter();
+        const [outputWriter] = createWriter();
 
-        expect(
-            incoming.push("This is not a valid Turtle file!"),
+        const proc = <FullProc<Validate>>new Validate(
+            {
+                shaclPath,
+                incoming: inputReader,
+                outgoing: outputWriter,
+            },
+            logger,
+        );
+
+        await proc.init();
+        const prom = proc.transform();
+
+        // pushing invalid RDF should break transform loop
+        await expect(
+            inputWriter.string("This is not a valid Turtle file!"),
         ).rejects.toThrow(ShaclError.invalidRdfFormat());
+
+        await inputWriter.close();
+        await expect(prom).rejects.toThrow(ShaclError.invalidRdfFormat());
     });
 
     test("invalid and fatal", async () => {
         expect.assertions(1);
 
-        await validate({
-            shaclPath,
-            incoming,
-            outgoing,
-            validationIsFatal: true,
-        });
+        const [inputWriter, inputReader] = createWriter();
+        const [outputWriter] = createWriter();
 
-        expect(incoming.push(invalidRdfData)).rejects.toThrow(
+        const proc = <FullProc<Validate>>new Validate(
+            {
+                shaclPath,
+                incoming: inputReader,
+                outgoing: outputWriter,
+                validationIsFatal: true,
+            },
+            logger,
+        );
+
+        await proc.init();
+        const prom = proc.transform();
+
+        await expect(inputWriter.string(invalidRdfData)).rejects.toThrow(
             ShaclError.validationFailed(),
         );
+
+        await inputWriter.close();
+        await expect(prom).rejects.toThrow(ShaclError.validationFailed());
     });
 
-    test("incorrect mime", async () => {
+    test("incorrect mime (JSON-LD with turtle mime)", async () => {
         expect.assertions(1);
 
-        await validate({
-            shaclPath,
-            incoming,
-            outgoing,
-            mime: "text/turtle",
-        });
+        const [inputWriter, inputReader] = createWriter();
+        const [outputWriter] = createWriter();
 
-        expect(async () => {
-            await incoming.push(validJsonLd);
-        }).rejects.toThrow(ShaclError.invalidRdfFormat());
+        const proc = <FullProc<Validate>>new Validate(
+            {
+                shaclPath,
+                incoming: inputReader,
+                outgoing: outputWriter,
+                mime: "text/turtle", // force wrong parser
+            },
+            logger,
+        );
+
+        await proc.init();
+        const prom = proc.transform();
+
+        await expect(inputWriter.string(validJsonLd)).rejects.toThrow(
+            ShaclError.invalidRdfFormat(),
+        );
+
+        await inputWriter.close();
+        await expect(prom).rejects.toThrow(ShaclError.invalidRdfFormat());
     });
 });

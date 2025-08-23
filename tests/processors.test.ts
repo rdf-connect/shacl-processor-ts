@@ -1,64 +1,34 @@
-import { expect, test, describe } from "vitest";
-import { extractProcessors, extractSteps, Source } from "@ajuvercr/js-runner";
+import { describe, expect, test } from "vitest";
+import { checkProcDefinition, getProc } from "@rdfc/js-runner/lib/testUtils";
+import { Validate } from "../src";
 
-const pipeline = `
-        @prefix js: <https://w3id.org/conn/js#>.
-        @prefix ws: <https://w3id.org/conn/ws#>.
-        @prefix : <https://w3id.org/conn#>.
-        @prefix owl: <http://www.w3.org/2002/07/owl#>.
-        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-        @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-        @prefix sh: <http://www.w3.org/ns/shacl#>.
+describe("Validate processor tests", async () => {
+    test("rdfc:Validate is properly defined", async () => {
+        const processorConfig = `
+        @prefix rdfc: <https://w3id.org/rdf-connect#>.
 
-        <> owl:imports <./node_modules/@ajuvercr/js-runner/ontology.ttl>, <./processors.ttl>.
+        <http://example.com/ns#processor> a rdfc:Validate;
+          rdfc:shaclPath "./shacl/point.ttl";
+          rdfc:incoming <jr>;
+          rdfc:outgoing <jw>;
+          rdfc:report <rp>;
+          rdfc:validationIsFatal true.
+        `;
 
-        [ ] a js:Validate;
-            js:args [
-                js:shaclPath "/tmp/path.ttl";
-                js:incoming [
-                  a js:JsReaderChannel;
-                ];
-                js:outgoing [
-                  a js:JsWriterChannel;
-                ];
-                js:report [
-                  a js:JsWriterChannel;
-                ];
-                js:validationIsFatal "true"^^xsd:boolean;
-            ].
-    `;
+        const configLocation = process.cwd() + "/processors.ttl";
+        await checkProcDefinition(configLocation, "Validate");
 
-describe("processor", () => {
-    test("definition", async () => {
-        expect.assertions(8);
+        const processor = await getProc<Validate>(
+            processorConfig,
+            "Validate",
+            configLocation,
+        );
+        await processor.init();
 
-        const source: Source = {
-            value: pipeline,
-            baseIRI: process.cwd() + "/config.ttl",
-            type: "memory",
-        };
-
-        // Parse pipeline into processors.
-        const {
-            processors,
-            quads,
-            shapes: config,
-        } = await extractProcessors(source);
-
-        // Extract the Log processor.
-        const env = processors.find((x) => x.ty.value.endsWith("Validate"))!;
-        expect(env).toBeDefined();
-
-        const args = extractSteps(env, quads, config);
-        expect(args.length).toBe(1);
-        expect(args[0].length).toBe(1);
-
-        const [{ shaclPath, incoming, outgoing, report, validationIsFatal }] =
-            args[0];
-        expect(shaclPath).toBe("/tmp/path.ttl");
-        expect(incoming.ty.id).toBe("https://w3id.org/conn/js#JsReaderChannel");
-        expect(outgoing.ty.id).toBe("https://w3id.org/conn/js#JsWriterChannel");
-        expect(report.ty.id).toBe("https://w3id.org/conn/js#JsWriterChannel");
-        expect(validationIsFatal).toBeTruthy();
+        expect(processor.incoming.constructor.name).toBe("ReaderInstance");
+        expect(processor.outgoing?.constructor.name).toBe("WriterInstance");
+        expect(processor.report?.constructor.name).toBe("WriterInstance");
+        expect(processor.shaclPath).toBe("./shacl/point.ttl");
+        expect(processor.validationIsFatal).toBe(true);
     });
 });

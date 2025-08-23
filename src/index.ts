@@ -6,6 +6,8 @@ import { Validator } from "shacl-engine";
 import { ShaclError } from "./error";
 import { Processor, Reader, Writer } from "@rdfc/js-runner";
 import { Sink, Stream } from "@rdfjs/types";
+import { EventEmitter } from "events";
+import { teeAsync } from "./utils";
 
 type ValidateArgs = {
     shaclPath: string;
@@ -18,7 +20,7 @@ type ValidateArgs = {
 
 export class Validate extends Processor<ValidateArgs> {
     protected serializer: Serializer;
-    protected parser: Sink<import("events")<[never]>, Stream> | undefined;
+    protected parser: Sink<EventEmitter, Stream> | undefined;
     protected validator: Validator;
 
     async init(this: ValidateArgs & this): Promise<void> {
@@ -60,9 +62,12 @@ export class Validate extends Processor<ValidateArgs> {
     }
 
     async transform(this: ValidateArgs & this): Promise<void> {
-        for await (const data of this.incoming.strings()) {
+        for await (const data of this.incoming.streams()) {
+            // Tee the async generator so we can consume twice.
+            const [forValidation, forForwarding] = teeAsync(data);
+
             // Parse data into a dataset.
-            const rawStream = Readable.from(data);
+            const rawStream = Readable.from(forValidation);
             const quadStream = this.parser!.import(rawStream);
             const dataset = await rdf
                 .dataset()
@@ -76,8 +81,8 @@ export class Validate extends Processor<ValidateArgs> {
 
             // Pass through data if valid.
             if (result.conforms) {
-                this.logger.debug(`Valid data: ${data}`);
-                await this.outgoing.string(data);
+                this.logger.debug("Forwarding valid data.");
+                await this.outgoing.stream(forForwarding);
             } else if (this.validationIsFatal) {
                 this.logger.warn("Validation failed and is fatal.");
                 throw ShaclError.validationFailed();
