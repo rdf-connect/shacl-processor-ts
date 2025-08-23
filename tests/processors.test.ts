@@ -8,7 +8,7 @@ describe("Validate processor tests", async () => {
         @prefix rdfc: <https://w3id.org/rdf-connect#>.
 
         <http://example.com/ns#processor> a rdfc:Validate;
-          rdfc:shaclPath "./shacl/point.ttl";
+          rdfc:shaclPath "./tests/shacl/point.ttl";
           rdfc:incoming <jr>;
           rdfc:outgoing <jw>;
           rdfc:report <rp>;
@@ -28,7 +28,7 @@ describe("Validate processor tests", async () => {
         expect(processor.incoming.constructor.name).toBe("ReaderInstance");
         expect(processor.outgoing?.constructor.name).toBe("WriterInstance");
         expect(processor.report?.constructor.name).toBe("WriterInstance");
-        expect(processor.shaclPath).toBe("./shacl/point.ttl");
+        expect(processor.shaclPath).toBe("./tests/shacl/point.ttl");
         expect(processor.validationIsFatal).toBe(true);
     });
 });

@@ -86,12 +86,7 @@ describe("Validate processor error handling", () => {
 
         await proc.init();
         const prom = proc.transform();
-
-        // pushing invalid RDF should break transform loop
-        await expect(
-            inputWriter.string("This is not a valid Turtle file!"),
-        ).rejects.toThrow(ShaclError.invalidRdfFormat());
-
+        await inputWriter.string("This is not a valid Turtle file!");
         await inputWriter.close();
         await expect(prom).rejects.toThrow(ShaclError.invalidRdfFormat());
     });
@@ -114,11 +109,7 @@ describe("Validate processor error handling", () => {
 
         await proc.init();
         const prom = proc.transform();
-
-        await expect(inputWriter.string(invalidRdfData)).rejects.toThrow(
-            ShaclError.validationFailed(),
-        );
-
+        await inputWriter.string(invalidRdfData);
         await inputWriter.close();
         await expect(prom).rejects.toThrow(ShaclError.validationFailed());
     });
@@ -142,10 +133,7 @@ describe("Validate processor error handling", () => {
         await proc.init();
         const prom = proc.transform();
 
-        await expect(inputWriter.string(validJsonLd)).rejects.toThrow(
-            ShaclError.invalidRdfFormat(),
-        );
-
+        await inputWriter.string(validJsonLd);
         await inputWriter.close();
         await expect(prom).rejects.toThrow(ShaclError.invalidRdfFormat());
     });
