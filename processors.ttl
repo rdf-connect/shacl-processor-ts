@@ -1,66 +1,49 @@
-@prefix js: <https://w3id.org/conn/js#>.
-@prefix fno: <https://w3id.org/function/ontology#>.
-@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-@prefix : <https://w3id.org/conn#>.
+@prefix rdfc: <https://w3id.org/rdf-connect#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 
-js:Validate a js:JsProcess;
-    js:file <./lib/index.js>;
-    js:function "validate";
-    js:location <./>;
-    js:mapping [
-        a fno:Mapping;
-        fno:parameterMapping [
-            a fnom:PositionParameterMapping;
-            fnom:functionParameter "args";
-            fnom:implementationParameterPosition "0"^^xsd:int;
-        ];
-    ].
+rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
+    rdfs:label "SHACL Validate Processor";
+    rdfs:comment "A processor that validates incoming RDF data against a SHACL shapes graph.";
+    rdfc:file <./lib/index.js>;
+    rdfc:class "Validate";
+    rdfc:entrypoint <./>.
 
 [ ] a sh:NodeShape;
-    sh:targetClass js:ValidateOptions;
+    sh:targetClass rdfc:Validate;
     sh:property [
         sh:datatype xsd:string;
-        sh:path js:shaclPath;
+        sh:path rdfc:shaclPath;
         sh:name "shaclPath";
         sh:maxCount 1;
         sh:minCount 1;
     ], [
-        sh:class :ReaderChannel;
-        sh:path js:incoming;
+        sh:class rdfc:Reader;
+        sh:path rdfc:incoming;
         sh:name "incoming";
         sh:maxCount 1;
-        sh:minCount 1;
+       sh:minCount 1;
     ], [
-        sh:class :WriterChannel;
-        sh:path js:outgoing;
+        sh:class rdfc:Writer;
+        sh:path rdfc:outgoing;
         sh:name "outgoing";
         sh:maxCount 1;
         sh:minCount 1;
     ], [
-        sh:class :WriterChannel;
-        sh:path js:report;
+        sh:class rdfc:Writer;
+        sh:path rdfc:report;
         sh:name "report";
         sh:maxCount 1;
     ], [
         sh:datatype xsd:boolean;
-        sh:path js:validationIsFatal;
+        sh:path rdfc:validationIsFatal;
         sh:name "validationIsFatal";
         sh:maxCount 1;
     ], [
         sh:datatype xsd:string;
-        sh:path js:mime;
+        sh:path rdfc:mime;
         sh:name "MIME type";
         sh:maxCount 1;
     ].
 
-[ ] a sh:NodeShape;
-    sh:targetClass js:Validate;
-    sh:property [
-        sh:class js:ValidateOptions;
-        sh:path js:args;
-        sh:name "args";
-        sh:maxCount 1;
-        sh:minCount 1;
-    ].
