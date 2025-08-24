@@ -24,7 +24,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@rdfc/js-runner": "^2.0.0-alpha.10",
+    "@rdfc/js-runner": "^2.0.0",
     "@treecg/connector-types": "^1.2.1",
     "@types/rdf-ext": "^2.5.2",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
