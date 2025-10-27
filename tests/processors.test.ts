@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { checkProcDefinition, getProc } from "@rdfc/js-runner/lib/testUtils";
+import { ProcHelper } from "@rdfc/js-runner/lib/testUtils";
 import { Validate } from "../src";
+import { resolve } from "path";
 
 describe("Validate processor tests", async () => {
     test("rdfc:Validate is properly defined", async () => {
@@ -15,15 +16,19 @@ describe("Validate processor tests", async () => {
           rdfc:validationIsFatal true.
         `;
 
-        const configLocation = process.cwd() + "/processors.ttl";
-        await checkProcDefinition(configLocation, "Validate");
+        const helper = new ProcHelper<Validate>();
+        await helper.importFile(resolve("./processors.ttl"));
+        await helper.importInline(resolve("./pipeline.ttl"), processorConfig);
 
-        const processor = await getProc<Validate>(
-            processorConfig,
-            "Validate",
-            configLocation,
+        const config = helper.getConfig("Validate");
+
+        expect(config.clazz).toBe("Validate");
+        expect(config.location).toBeDefined();
+        expect(config.file).toBeDefined();
+
+        const processor = await helper.getProcessor(
+            "http://example.com/ns#processor",
         );
-        await processor.init();
 
         expect(processor.incoming.constructor.name).toBe("ReaderInstance");
         expect(processor.outgoing?.constructor.name).toBe("WriterInstance");
