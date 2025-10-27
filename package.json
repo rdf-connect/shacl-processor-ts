@@ -24,7 +24,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@rdfc/js-runner": "^2.0.0",
+    "@rdfc/js-runner": "^3.0.1",
     "@treecg/connector-types": "^1.2.1",
     "@types/rdf-ext": "^2.5.2",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
@@ -39,7 +39,8 @@
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "winston": "^3.18.3"
   },
   "dependencies": {
     "@rdfjs/serializer-turtle": "^1.1.5",
