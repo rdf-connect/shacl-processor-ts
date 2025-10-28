@@ -1,0 +1,3 @@
+{
+    "extends": ["github>smessie/renovate-presets:js"]
+}
