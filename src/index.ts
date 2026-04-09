@@ -3,11 +3,11 @@ import { Readable } from "stream";
 import formatsPretty from "@rdfjs/formats/pretty.js";
 import Serializer from "@rdfjs/serializer-turtle";
 import { Validator } from "shacl-engine";
-import { ShaclError } from "./error";
+import { ShaclError } from "./error.js";
 import { Processor, Reader, Writer } from "@rdfc/js-runner";
 import { Sink, Stream } from "@rdfjs/types";
 import { EventEmitter } from "events";
-import { teeAsync } from "./utils";
+import { teeAsync } from "./utils.js";
 
 type ValidateArgs = {
     shaclPath: string;
@@ -56,7 +56,6 @@ export class Validate extends Processor<ValidateArgs> {
         this.logger.debug("Shapes are loaded.");
 
         // Parse input stream using shape stream.
-        // @ts-expect-error Factory is valid.
         this.validator = new Validator(shapes, { factory: rdf });
         this.logger.debug("Validator is initialized.");
     }

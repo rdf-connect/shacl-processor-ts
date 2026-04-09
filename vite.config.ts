@@ -8,7 +8,7 @@ export default defineConfig({
             optimizer: {
                 ssr: {
                     enabled: true,
-                    include: ["@ajuvercr/js-runner"],
+                    include: ["@rdfc/js-runner"],
                 },
             },
         },

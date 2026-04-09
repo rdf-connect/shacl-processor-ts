@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
+        "rootDir": "./src",
         "outDir": "lib/",
         "lib": ["ES2022"],
         "target": "ES2022",
-        "module": "ES2022",
-        "moduleResolution": "node",
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
         "preserveConstEnums": true,
-        "downlevelIteration": true,
         "skipLibCheck": true,
         "strict": true,
         "strictFunctionTypes": false,
