@@ -33,7 +33,7 @@
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.9.4",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.17",
