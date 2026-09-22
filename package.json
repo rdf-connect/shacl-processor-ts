@@ -4,6 +4,9 @@
   "description": "Validate data using SHACL.",
   "type": "module",
   "main": "lib/index.js",
+  "bin": {
+    "shacl-validate": "lib/cli.js"
+  },
   "files": [
     "lib/**/*",
     "./processors.ttl"

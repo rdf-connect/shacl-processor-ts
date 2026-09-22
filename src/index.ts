@@ -1,13 +1,16 @@
-import rdf, { PrefixMapFactory } from "rdf-ext";
 import { Readable } from "stream";
-import formatsPretty from "@rdfjs/formats/pretty.js";
 import Serializer from "@rdfjs/serializer-turtle";
 import { Validator } from "shacl-engine";
 import { ShaclError } from "./error.js";
 import { Processor, Reader, Writer } from "@rdfc/js-runner";
-import { Sink, Stream } from "@rdfjs/types";
-import { EventEmitter } from "events";
 import { teeAsync } from "./utils.js";
+import {
+    createReportSerializer,
+    getParser,
+    loadValidator,
+    parseDataset,
+    Parser,
+} from "./core.js";
 
 type ValidateArgs = {
     shaclPath: string;
@@ -20,7 +23,7 @@ type ValidateArgs = {
 
 export class Validate extends Processor<ValidateArgs> {
     protected serializer: Serializer;
-    protected parser: Sink<EventEmitter, Stream> | undefined;
+    protected parser: Parser | undefined;
     protected validator: Validator;
 
     async init(this: ValidateArgs & this): Promise<void> {
@@ -29,34 +32,15 @@ export class Validate extends Processor<ValidateArgs> {
         this.validationIsFatal = this.validationIsFatal ?? false;
 
         // Initialize the shared serializer.
-        const prefixes = new PrefixMapFactory().prefixMap();
-        prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));
-        this.serializer = new Serializer({ prefixes });
+        this.serializer = createReportSerializer();
         this.logger.debug("Serializer is initialized.");
 
         // Initialize the data parser.
-        this.parser = rdf.formats.parsers.get(this.mime);
-        if (!this.parser) {
-            throw ShaclError.invalidRdfFormat();
-        }
+        this.parser = getParser(this.mime);
         this.logger.debug("Parser is initialized.");
 
-        // Extend formatting with pretty formats.
-        rdf.formats.import(formatsPretty);
-
-        // Create shape stream.
-        const res = await rdf.fetch(this.shaclPath);
-        if (!res.ok) {
-            throw ShaclError.fileSystemError();
-        }
-
-        const shapes = await res.dataset().catch(() => {
-            throw ShaclError.invalidRdfFormat();
-        });
-        this.logger.debug("Shapes are loaded.");
-
-        // Parse input stream using shape stream.
-        this.validator = new Validator(shapes, { factory: rdf });
+        // Load the shapes and build the validator from them.
+        this.validator = await loadValidator(this.shaclPath);
         this.logger.debug("Validator is initialized.");
     }
 
@@ -66,14 +50,10 @@ export class Validate extends Processor<ValidateArgs> {
             const [forValidation, forForwarding] = teeAsync(data);
 
             // Parse data into a dataset.
-            const rawStream = Readable.from(forValidation);
-            const quadStream = this.parser!.import(rawStream);
-            const dataset = await rdf
-                .dataset()
-                .import(quadStream)
-                .catch(() => {
-                    throw ShaclError.invalidRdfFormat();
-                });
+            const dataset = await parseDataset(
+                this.parser!,
+                Readable.from(forValidation),
+            );
 
             // Run through validator.
             const result = await this.validator.validate({ dataset });
