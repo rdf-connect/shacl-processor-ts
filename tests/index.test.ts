@@ -56,6 +56,8 @@ beforeEach(async () => {
             incoming: inputReader,
             outgoing: outputWriter,
             report: reportWriter,
+            mime: "text/turtle",
+            validationIsFatal: false,
         },
         logger,
     );
@@ -130,6 +132,7 @@ describe("shacl - config", () => {
                 outgoing: outputWriter,
                 report: reportWriter,
                 mime: "application/n-triples",
+                validationIsFatal: false,
             },
             logger,
         );

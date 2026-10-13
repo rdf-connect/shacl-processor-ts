@@ -36,4 +36,28 @@ describe("Validate processor tests", async () => {
         expect(processor.shaclPath).toBe("./tests/shacl/point.ttl");
         expect(processor.validationIsFatal).toBe(true);
     });
+
+    test("rdfc:Validate falls back to its default values", async () => {
+        const processorConfig = `
+        @prefix rdfc: <https://w3id.org/rdf-connect#>.
+
+        <http://example.com/ns#processor> a rdfc:Validate;
+          rdfc:shaclPath "./tests/shacl/point.ttl";
+          rdfc:incoming <jr>;
+          rdfc:outgoing <jw>.
+        `;
+
+        const helper = new ProcHelper<Validate>();
+        await helper.importFile(resolve("./processors.ttl"));
+        await helper.importInline(resolve("./pipeline.ttl"), processorConfig);
+        helper.getConfig("Validate");
+
+        const processor = await helper.getProcessor(
+            "http://example.com/ns#processor",
+        );
+
+        expect(processor.report).toBeUndefined();
+        expect(processor.mime).toBe("text/turtle");
+        expect(processor.validationIsFatal).toBe(false);
+    });
 });
