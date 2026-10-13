@@ -13,7 +13,8 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
 [ ] a sh:NodeShape;
     sh:targetClass rdfc:Validate;
     sh:property [
-        sh:datatype xsd:string;
+        sh:nodeKind sh:IRIOrLiteral;
+        sh:codeType xsd:string;
         sh:path rdfc:shaclPath;
         sh:codeIdentifier "shaclPath";
         sh:name "SHACL shapes file path";
