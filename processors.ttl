@@ -13,7 +13,8 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
 [ ] a sh:NodeShape;
     sh:targetClass rdfc:Validate;
     sh:property [
-        sh:datatype xsd:string;
+        sh:nodeKind sh:IRIOrLiteral;
+        sh:codeType xsd:string;
         sh:path rdfc:shaclPath;
         sh:codeIdentifier "shaclPath";
         sh:name "SHACL shapes file path";
@@ -49,6 +50,7 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
         sh:codeIdentifier "validationIsFatal";
         sh:name "Validation failure is fatal";
         sh:description "If true, stop processing and raise an error when validation fails; default is false.";
+        sh:defaultValue false;
         sh:maxCount 1;
     ], [
         sh:datatype xsd:string;
@@ -56,5 +58,6 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
         sh:codeIdentifier "mime";
         sh:name "Input MIME type";
         sh:description "MIME type of the incoming RDF data (for example text/turtle or application/ld+json); default is text/turtle.";
+        sh:defaultValue "text/turtle";
         sh:maxCount 1;
     ].

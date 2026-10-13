@@ -60,7 +60,7 @@ npm install @rdfc/shacl-processor-ts
 
 Parameters of `rdfc:Validate`:
 
-- `rdfc:shaclPath` (**string**, required): Local file path to the SHACL shapes graph.
+- `rdfc:shaclPath` (**string** or IRI, required): Local file path to the SHACL shapes graph.
 - `rdfc:incoming` (**rdfc:Reader**, required): The input channel with RDF data to validate.
 - `rdfc:outgoing` (**rdfc:Writer**, required): The output channel for valid RDF data.
 - `rdfc:report` (**rdfc:Writer**, optional): Output channel for SHACL validation reports. Defaults to none.
