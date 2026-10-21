@@ -14,8 +14,8 @@ type ValidateArgs = {
     incoming: Reader;
     outgoing: Writer;
     report?: Writer;
-    mime?: string;
-    validationIsFatal?: boolean;
+    mime: string;
+    validationIsFatal: boolean;
 };
 
 export class Validate extends Processor<ValidateArgs> {
@@ -24,10 +24,6 @@ export class Validate extends Processor<ValidateArgs> {
     protected validator: Validator;
 
     async init(this: ValidateArgs & this): Promise<void> {
-        // Default arguments.
-        this.mime = this.mime ?? "text/turtle";
-        this.validationIsFatal = this.validationIsFatal ?? false;
-
         // Initialize the shared serializer.
         const prefixes = new PrefixMapFactory().prefixMap();
         prefixes.set("sh", rdf.namedNode("http://www.w3.org/ns/shacl#"));

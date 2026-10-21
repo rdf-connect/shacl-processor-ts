@@ -28,6 +28,8 @@ describe("Validate processor error handling", () => {
                 shaclPath: "/tmp/shacl-doesnt-exist.ttl",
                 incoming: inputReader,
                 outgoing: outputWriter,
+                mime: "text/turtle",
+                validationIsFatal: false,
             },
             logger,
         );
@@ -48,6 +50,7 @@ describe("Validate processor error handling", () => {
                 incoming: inputReader,
                 outgoing: outputWriter,
                 mime: "text/invalid",
+                validationIsFatal: false,
             },
             logger,
         );
@@ -69,6 +72,8 @@ describe("Validate processor error handling", () => {
                 shaclPath: "./tests/shacl/invalid.ttl",
                 incoming: inputReader,
                 outgoing: outputWriter,
+                mime: "text/turtle",
+                validationIsFatal: false,
             },
             logger,
         );
@@ -91,6 +96,7 @@ describe("Validate processor error handling", () => {
                 incoming: inputReader,
                 outgoing: outputWriter,
                 validationIsFatal: true,
+                mime: "text/turtle",
             },
             logger,
         );
@@ -115,6 +121,7 @@ describe("Validate processor error handling", () => {
                 incoming: inputReader,
                 outgoing: outputWriter,
                 validationIsFatal: true,
+                mime: "text/turtle",
             },
             logger,
         );
@@ -139,6 +146,7 @@ describe("Validate processor error handling", () => {
                 incoming: inputReader,
                 outgoing: outputWriter,
                 mime: "text/turtle", // force wrong parser
+                validationIsFatal: false,
             },
             logger,
         );
