@@ -31,6 +31,7 @@ npm install @rdfc/shacl-processor-ts
 
 ```turtle
 @prefix rdfc: <https://w3id.org/rdf-connect#>.
+@prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
 
 ### Import the processor definitions
@@ -45,27 +46,27 @@ npm install @rdfc/shacl-processor-ts
 # Add the `rdfc:processor <validator>` statement under the `rdfc:consistsOf` statement of the `rdfc:NodeRunner`
 
 ### Define and configure the processors
-<validator> a rdfc:Validate;
-    rdfc:shaclPath "./shapes/example-shapes.ttl";
-    rdfc:incoming <in>;
-    rdfc:outgoing <out>;
-    rdfc:report <report>;
-    rdfc:validationIsFatal false;
-    rdfc:mime "text/turtle".
+<validator> a rdfcp:Validate;
+    rdfcp:shaclPath "./shapes/example-shapes.ttl";
+    rdfcp:incoming <in>;
+    rdfcp:outgoing <out>;
+    rdfcp:report <report>;
+    rdfcp:validationIsFatal false;
+    rdfcp:mime "text/turtle".
 ```
 
 ---
 
 ## Configuration
 
-Parameters of `rdfc:Validate`:
+Parameters of `rdfcp:Validate`:
 
-- `rdfc:shaclPath` (**string** or IRI, required): Local file path to the SHACL shapes graph.
-- `rdfc:incoming` (**rdfc:Reader**, required): The input channel with RDF data to validate.
-- `rdfc:outgoing` (**rdfc:Writer**, required): The output channel for valid RDF data.
-- `rdfc:report` (**rdfc:Writer**, optional): Output channel for SHACL validation reports. Defaults to none.
-- `rdfc:validationIsFatal` (**boolean**, optional): If true, throws a fatal error when validation fails. Default: `false`.
-- `rdfc:mime` (**string**, optional): MIME type of the incoming data (e.g., `text/turtle`, `application/ld+json`). Default: `text/turtle`.
+- `rdfcp:shaclPath` (**string** or IRI, required): Local file path to the SHACL shapes graph.
+- `rdfcp:incoming` (**rdfc:Reader**, required): The input channel with RDF data to validate.
+- `rdfcp:outgoing` (**rdfc:Writer**, required): The output channel for valid RDF data.
+- `rdfcp:report` (**rdfc:Writer**, optional): Output channel for SHACL validation reports. Defaults to none.
+- `rdfcp:validationIsFatal` (**boolean**, optional): If true, throws a fatal error when validation fails. Default: `false`.
+- `rdfcp:mime` (**string**, optional): MIME type of the incoming data (e.g., `text/turtle`, `application/ld+json`). Default: `text/turtle`.
 
 ---
 
@@ -80,10 +81,10 @@ Parameters of `rdfc:Validate`:
 ## Example
 
 ```turtle
-<validator> a rdfc:Validate;
-    rdfc:shaclPath "./shapes/person-shapes.ttl";
-    rdfc:incoming <in>;
-    rdfc:outgoing <out>;
-    rdfc:report <report>;
-    rdfc:mime "text/turtle".
+<validator> a rdfcp:Validate;
+    rdfcp:shaclPath "./shapes/person-shapes.ttl";
+    rdfcp:incoming <in>;
+    rdfcp:outgoing <out>;
+    rdfcp:report <report>;
+    rdfcp:mime "text/turtle".
 ```
