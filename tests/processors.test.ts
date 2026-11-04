@@ -6,16 +6,17 @@ import { pathToFileURL } from "url";
 import type { Logger } from "winston";
 
 describe("Validate processor tests", async () => {
-    test("rdfc:Validate is properly defined", async () => {
+    test("rdfcp:Validate is properly defined", async () => {
         const processorConfig = `
         @prefix rdfc: <https://w3id.org/rdf-connect#>.
+        @prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 
-        <http://example.com/ns#processor> a rdfc:Validate;
-          rdfc:shaclPath "./tests/shacl/point.ttl";
-          rdfc:incoming <jr>;
-          rdfc:outgoing <jw>;
-          rdfc:report <rp>;
-          rdfc:validationIsFatal true.
+        <http://example.com/ns#processor> a rdfcp:Validate;
+          rdfcp:shaclPath "./tests/shacl/point.ttl";
+          rdfcp:incoming <jr>;
+          rdfcp:outgoing <jw>;
+          rdfcp:report <rp>;
+          rdfcp:validationIsFatal true.
         `;
 
         const helper = new ProcHelper<Validate>();
@@ -39,14 +40,15 @@ describe("Validate processor tests", async () => {
         expect(processor.validationIsFatal).toBe(true);
     });
 
-    test("rdfc:Validate falls back to its default values", async () => {
+    test("rdfcp:Validate falls back to its default values", async () => {
         const processorConfig = `
         @prefix rdfc: <https://w3id.org/rdf-connect#>.
+        @prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 
-        <http://example.com/ns#processor> a rdfc:Validate;
-          rdfc:shaclPath "./tests/shacl/point.ttl";
-          rdfc:incoming <jr>;
-          rdfc:outgoing <jw>.
+        <http://example.com/ns#processor> a rdfcp:Validate;
+          rdfcp:shaclPath "./tests/shacl/point.ttl";
+          rdfcp:incoming <jr>;
+          rdfcp:outgoing <jw>.
         `;
 
         const helper = new ProcHelper<Validate>();
@@ -63,14 +65,15 @@ describe("Validate processor tests", async () => {
         expect(processor.validationIsFatal).toBe(false);
     });
 
-    test("rdfc:shaclPath can be written as an IRI", async () => {
+    test("rdfcp:shaclPath can be written as an IRI", async () => {
         const processorConfig = `
         @prefix rdfc: <https://w3id.org/rdf-connect#>.
+        @prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 
-        <http://example.com/ns#processor> a rdfc:Validate;
-          rdfc:shaclPath <./tests/shacl/point.ttl>;
-          rdfc:incoming <jr>;
-          rdfc:outgoing <jw>.
+        <http://example.com/ns#processor> a rdfcp:Validate;
+          rdfcp:shaclPath <./tests/shacl/point.ttl>;
+          rdfcp:incoming <jr>;
+          rdfcp:outgoing <jw>.
         `;
 
         const helper = new ProcHelper<Validate>();

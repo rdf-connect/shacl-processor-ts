@@ -1,9 +1,10 @@
 @prefix rdfc: <https://w3id.org/rdf-connect#>.
+@prefix rdfcp: <https://w3id.org/rdf-connect/processors#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 
-rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
+rdfcp:Validate rdfc:jsImplementationOf rdfc:Processor;
     rdfs:label "SHACL Validate Processor";
     rdfs:comment "A processor that validates incoming RDF data against a SHACL shapes graph.";
     rdfc:file <./lib/index.js>;
@@ -11,11 +12,11 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
     rdfc:entrypoint <./>.
 
 [ ] a sh:NodeShape;
-    sh:targetClass rdfc:Validate;
+    sh:targetClass rdfcp:Validate;
     sh:property [
         sh:nodeKind sh:IRIOrLiteral;
         sh:codeType xsd:string;
-        sh:path rdfc:shaclPath;
+        sh:path rdfcp:shaclPath;
         sh:codeIdentifier "shaclPath";
         sh:name "SHACL shapes file path";
         sh:description "Path to the local SHACL shapes graph file used to validate incoming RDF data.";
@@ -23,7 +24,7 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
         sh:minCount 1;
     ], [
         sh:class rdfc:Reader;
-        sh:path rdfc:incoming;
+        sh:path rdfcp:incoming;
         sh:codeIdentifier "incoming";
         sh:name "Incoming reader";
         sh:description "Input channel IRI that provides the RDF data stream to validate.";
@@ -31,7 +32,7 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
        sh:minCount 1;
     ], [
         sh:class rdfc:Writer;
-        sh:path rdfc:outgoing;
+        sh:path rdfcp:outgoing;
         sh:codeIdentifier "outgoing";
         sh:name "Outgoing writer";
         sh:description "Output channel IRI where RDF data is forwarded when it conforms to the SHACL shapes.";
@@ -39,14 +40,14 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
         sh:minCount 1;
     ], [
         sh:class rdfc:Writer;
-        sh:path rdfc:report;
+        sh:path rdfcp:report;
         sh:codeIdentifier "report";
         sh:name "Validation report writer";
         sh:description "Optional output channel IRI for SHACL validation reports when data does not conform.";
         sh:maxCount 1;
     ], [
         sh:datatype xsd:boolean;
-        sh:path rdfc:validationIsFatal;
+        sh:path rdfcp:validationIsFatal;
         sh:codeIdentifier "validationIsFatal";
         sh:name "Validation failure is fatal";
         sh:description "If true, stop processing and raise an error when validation fails; default is false.";
@@ -54,7 +55,7 @@ rdfc:Validate rdfc:jsImplementationOf rdfc:Processor;
         sh:maxCount 1;
     ], [
         sh:datatype xsd:string;
-        sh:path rdfc:mime;
+        sh:path rdfcp:mime;
         sh:codeIdentifier "mime";
         sh:name "Input MIME type";
         sh:description "MIME type of the incoming RDF data (for example text/turtle or application/ld+json); default is text/turtle.";
