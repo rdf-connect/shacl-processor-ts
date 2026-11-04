@@ -24,17 +24,17 @@ rdfcp:Validate rdfc:jsImplementationOf rdfc:Processor;
         sh:minCount 1;
     ], [
         sh:class rdfc:Reader;
-        sh:path rdfcp:incoming;
+        sh:path rdfcp:input;
         sh:codeIdentifier "incoming";
-        sh:name "Incoming reader";
+        sh:name "Input channel";
         sh:description "Input channel IRI that provides the RDF data stream to validate.";
         sh:maxCount 1;
        sh:minCount 1;
     ], [
         sh:class rdfc:Writer;
-        sh:path rdfcp:outgoing;
+        sh:path rdfcp:output;
         sh:codeIdentifier "outgoing";
-        sh:name "Outgoing writer";
+        sh:name "Output channel";
         sh:description "Output channel IRI where RDF data is forwarded when it conforms to the SHACL shapes.";
         sh:maxCount 1;
         sh:minCount 1;

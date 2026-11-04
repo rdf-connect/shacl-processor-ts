@@ -48,8 +48,8 @@ npm install @rdfc/shacl-processor-ts
 ### Define and configure the processors
 <validator> a rdfcp:Validate;
     rdfcp:shaclPath "./shapes/example-shapes.ttl";
-    rdfcp:incoming <in>;
-    rdfcp:outgoing <out>;
+    rdfcp:input <in>;
+    rdfcp:output <out>;
     rdfcp:report <report>;
     rdfcp:validationIsFatal false;
     rdfcp:mime "text/turtle".
@@ -62,8 +62,8 @@ npm install @rdfc/shacl-processor-ts
 Parameters of `rdfcp:Validate`:
 
 - `rdfcp:shaclPath` (**string** or IRI, required): Local file path to the SHACL shapes graph.
-- `rdfcp:incoming` (**rdfc:Reader**, required): The input channel with RDF data to validate.
-- `rdfcp:outgoing` (**rdfc:Writer**, required): The output channel for valid RDF data.
+- `rdfcp:input` (**rdfc:Reader**, required): The input channel with RDF data to validate.
+- `rdfcp:output` (**rdfc:Writer**, required): The output channel for valid RDF data.
 - `rdfcp:report` (**rdfc:Writer**, optional): Output channel for SHACL validation reports. Defaults to none.
 - `rdfcp:validationIsFatal` (**boolean**, optional): If true, throws a fatal error when validation fails. Default: `false`.
 - `rdfcp:mime` (**string**, optional): MIME type of the incoming data (e.g., `text/turtle`, `application/ld+json`). Default: `text/turtle`.
@@ -83,8 +83,8 @@ Parameters of `rdfcp:Validate`:
 ```turtle
 <validator> a rdfcp:Validate;
     rdfcp:shaclPath "./shapes/person-shapes.ttl";
-    rdfcp:incoming <in>;
-    rdfcp:outgoing <out>;
+    rdfcp:input <in>;
+    rdfcp:output <out>;
     rdfcp:report <report>;
     rdfcp:mime "text/turtle".
 ```

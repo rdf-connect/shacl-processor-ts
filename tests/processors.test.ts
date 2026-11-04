@@ -13,8 +13,8 @@ describe("Validate processor tests", async () => {
 
         <http://example.com/ns#processor> a rdfcp:Validate;
           rdfcp:shaclPath "./tests/shacl/point.ttl";
-          rdfcp:incoming <jr>;
-          rdfcp:outgoing <jw>;
+          rdfcp:input <jr>;
+          rdfcp:output <jw>;
           rdfcp:report <rp>;
           rdfcp:validationIsFatal true.
         `;
@@ -47,8 +47,8 @@ describe("Validate processor tests", async () => {
 
         <http://example.com/ns#processor> a rdfcp:Validate;
           rdfcp:shaclPath "./tests/shacl/point.ttl";
-          rdfcp:incoming <jr>;
-          rdfcp:outgoing <jw>.
+          rdfcp:input <jr>;
+          rdfcp:output <jw>.
         `;
 
         const helper = new ProcHelper<Validate>();
@@ -72,8 +72,8 @@ describe("Validate processor tests", async () => {
 
         <http://example.com/ns#processor> a rdfcp:Validate;
           rdfcp:shaclPath <./tests/shacl/point.ttl>;
-          rdfcp:incoming <jr>;
-          rdfcp:outgoing <jw>.
+          rdfcp:input <jr>;
+          rdfcp:output <jw>.
         `;
 
         const helper = new ProcHelper<Validate>();
